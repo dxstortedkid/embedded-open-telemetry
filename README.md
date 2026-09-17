@@ -10,7 +10,7 @@ The application operates using two primary threads:
 Data synchronization between threads is securely managed via a mutex-protected `SharedContext`.
 
 ## Directory Structure
-
+```text
 .
 ├── app/
 │   ├── backend/       # Background calculations and logic
@@ -22,21 +22,30 @@ Data synchronization between threads is securely managed via a mutex-protected `
 ├── build/             # Build artifacts and final executable
 ├── CMakeLists.txt     # Root CMake configuration
 └── README.md
+```
 
 ## Dependencies
 Ensure you have a C++23 compatible compiler, CMake, and the required system libraries.
 
 **Arch Linux / CachyOS:**
+```bash
 sudo pacman -S base-devel cmake ninja git glfw mesa
+```
 
 ## Build & Run
 The project is configured using Modern CMake and the Ninja build system.
 
 1. Configure the project:
+```bash
 cmake -B build -G Ninja
+```
 
 2. Compile the source code:
+```bash
 cmake --build build
+```
 
 3. Execute the application:
+```bash
 ./build/eot_app
+```
