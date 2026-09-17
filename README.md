@@ -1,37 +1,42 @@
-# OpenTelemetry / MCU Telemetry Studio (WIP)
+# Embedded Open Telemetry (EOT)
 
-A lightweight, hardware-accelerated desktop workstation designed for high-rate data visualization, real-time logging, and interactive debugging of microcontrollers (ESP32, STM32, RP2040, etc.).
+A lightweight, multithreaded C++23 application for real-time telemetry visualization. The project uses a strictly decoupled architecture, separating the computational backend from the frontend UI to ensure high performance, modularity, and thread safety.
 
-## Core Purpose
+## Architecture
+The application operates using two primary threads:
+* **UI Thread (Frontend):** Handles GLFW window events, OpenGL3 rendering, and Dear ImGui / ImPlot components. Locked to the monitor's refresh rate (V-Sync).
+* **Worker Thread (Backend):** Executes data generation, processing, and hardware polling (`std::jthread`). 
 
-Standard serial monitors are typically limited to raw text terminals or basic single-line plotters that struggle with high-bandwidth telemetry. This project bridges the gap by providing:
-* **Multi-channel Realtime Streaming:** Native 60+ FPS plotting via Dear ImGui & ImPlot capable of handling hundreds of thousands of data points without dropping frames.
-* **Universal Transport Layer:** Unified I/O interface supporting USB-Serial (CDC/UART), Bluetooth (BLE & Classic RFCOMM), and Wi-Fi (UDP / TCP / WebSockets).
-* **Modular Pipeline Architecture:** Pluggable decoder architecture separating physical transport, frame parsing, and UI widgets.
-* **Bidirectional Control:** Real-time parameter tuning (PID gains, filter cutoffs, setpoints) sent back to the MCU on the fly.
+Data synchronization between threads is securely managed via a mutex-protected `SharedContext`.
 
-## Planned Architecture
+## Directory Structure
 
-Microcontroller → Transport Layer → Stream Framer → Protocol Decoders → Ring Buffers & DSP → ImPlot / Dataflow Graph
+.
+├── app/
+│   ├── backend/       # Background calculations and logic
+│   ├── common/        # Thread-safe shared data structures (Contracts)
+│   ├── frontend/      # ImGui windows, views, and rendering orchestrator
+│   ├── third_party/   # Static dependencies (Dear ImGui, ImPlot)
+│   ├── CMakeLists.txt # App module configuration
+│   └── main.cpp       # Entry point and thread initialization
+├── build/             # Build artifacts and final executable
+├── CMakeLists.txt     # Root CMake configuration
+└── README.md
 
-Transport: UART, BLE, Wi-Fi
-Framing: COBS, SLIP, Line Delimiter
-Protocols: Binary, Protobuf, CSV, CBOR
-DSP: Filtering, FFT, Transformations
-Output: Real-time Waveforms, Dashboards, Node-based Pipelines
+## Dependencies
+Ensure you have a C++23 compatible compiler, CMake, and the required system libraries.
 
-## Target Platforms
+**Arch Linux / CachyOS:**
+sudo pacman -S base-devel cmake ninja git glfw mesa
 
-* **Linux:** Arch / CachyOS, Fedora, Ubuntu (Wayland & X11 via OpenGL 3.3+ / Vulkan)
-* **Windows:** Windows 10 / 11 (x64)
-* **macOS:** Apple Silicon & Intel (Metal / OpenGL)
+## Build & Run
+The project is configured using Modern CMake and the Ninja build system.
 
-## Roadmap
+1. Configure the project:
+cmake -B build -G Ninja
 
-- [x] Initial Dear ImGui + ImPlot runtime scaffold.
-- [ ] Cross-platform serial port backend (libserialport / boost.asio).
-- [ ] Transport abstraction interface (`ITransport`).
-- [ ] Ring buffer memory engine for zero-allocation packet pushing.
-- [ ] Protocol plugin API (C-ABI / dynamic shared libraries or compile-time registration).
-- [ ] UDP / TCP network streams for Wi-Fi telemetry.
-- [ ] Interactive Node-based data processing graph.
+2. Compile the source code:
+cmake --build build
+
+3. Execute the application:
+./build/eot_app

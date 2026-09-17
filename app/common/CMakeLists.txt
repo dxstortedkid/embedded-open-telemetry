@@ -1,0 +1,2 @@
+add_library(app_common INTERFACE)
+target_include_directories(app_common INTERFACE include)
